@@ -23,11 +23,9 @@ repository               : "caglaergul/caglaergul.github.io"
 author:
   # Biographic information
   avatar           : "profile.png"
-  name             : "Your Sidebar Name"
-  pronouns         : # example: "she/her"  
-  bio              : "Short biography for the left-hand sidebar"
-  location         : "Earth"
-  employer         : "Red Brick University"
+  name             : "Cagla Ergul"  
+  bio              : "PhD Candidate in Technology & Operations"
+  employer         : "University of Michigan"
   uri              : # URL
   email            : "cergul@umich.edu" 
 
