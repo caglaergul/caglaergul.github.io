@@ -1,7 +1,7 @@
 ---
 layout: about
 title: About
-permalink: /
+permalink: /about/
 ---
 
 Hi! I’m a PhD Candidate in Technology & Operations at the Ross School of Business, University of Michigan. My advisors are [Stephen Leider](https://sites.google.com/umich.edu/stephenleider/bio) and [Ruslan Momot](https://ruslanmomot.info/).
