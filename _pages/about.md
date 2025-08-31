@@ -1,7 +1,12 @@
 ---
 layout: about
 title: About
-permalink: /about/
+permalink: /
+title: "Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites"
+author_profile: true
+redirect_from: 
+  - /about/
+  - /about.html
 ---
 
 Hi! I’m a PhD Candidate in Technology & Operations at the Ross School of Business, University of Michigan. My advisors are [Stephen Leider](https://sites.google.com/umich.edu/stephenleider/bio) and [Ruslan Momot](https://ruslanmomot.info/).
