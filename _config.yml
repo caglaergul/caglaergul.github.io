@@ -21,18 +21,16 @@ repository               : "caglaergul/caglaergul.github.io"
 #               If a field is blank the icon and link will not appear, otherwise it will be shown.
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
-  # Biographic information
-  avatar           : "profilepic.jpg"
-  name             : "Cagla Ergul"  
-  bio              : "PhD Candidate in Technology & Operations"
-  employer         : "University of Michigan"
-  uri              : # URL
-  email            : # "cergul@umich.edu" 
+  avatar   : "profilepic.jpg"
+  name     : "Cagla Ergul"
+  bio      : "PhD Candidate in Technology & Operations"
+  employer : "University of Michigan"
+  # email  : "cergul@umich.edu"   # leave commented or delete
 
   links:
-   - label: "cergul@umich.edu"
-     icon: "fas fa-envelope"
-     url: "mailto:cergul@umich.edu"
+    - label: "cergul@umich.edu"
+      icon: "fas fa-fw fa-envelope"
+      url: "mailto:cergul@umich.edu"
 
   # Academic websites
   academia         : # URL
