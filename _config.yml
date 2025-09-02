@@ -25,12 +25,7 @@ author:
   name     : "Cagla Ergul"
   bio      : "PhD Candidate in Technology & Operations"
   employer : "University of Michigan"
-  # email  : "cergul@umich.edu"   # leave commented or delete
-
-  links:
-    - label: "cergul@umich.edu"
-      icon: "fas fa-fw fa-envelope"
-      url: "mailto:cergul@umich.edu"
+  email    : "cergul@umich.edu"   # leave commented or delete
 
   # Academic websites
   academia         : # URL
