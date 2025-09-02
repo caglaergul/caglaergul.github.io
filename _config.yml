@@ -27,7 +27,12 @@ author:
   bio              : "PhD Candidate in Technology & Operations"
   employer         : "University of Michigan"
   uri              : # URL
-  email            : "cergul@umich.edu" 
+  email            : # "cergul@umich.edu" 
+
+  links:
+   - label: "cergul@umich.edu"
+     icon: "fas fa-envelope"
+     url: "mailto:cergul@umich.edu"
 
   # Academic websites
   academia         : # URL
