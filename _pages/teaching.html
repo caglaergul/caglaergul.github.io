@@ -11,8 +11,10 @@ author_profile: true
   <div class="list__item">
     <article class="archive__item">
       <h2 class="archive__item-title">{{ post.title }}</h2>
-      <p>{{ post.type }}</p>
-      <p>{{ post.content }}</p>
+      <ul>
+        <li>{{ post.type }}</li>
+        {{ post.content }}
+      </ul>
     </article>
   </div>
 {% endfor %}

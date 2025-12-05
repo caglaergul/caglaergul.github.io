@@ -6,6 +6,5 @@ permalink: /teaching/2025-fall-teaching
 date: 2025-09-01
 ---
 
-Fall 2025
-
-78 students
+<li>Fall 2025</li>
+<li>78 students</li>
