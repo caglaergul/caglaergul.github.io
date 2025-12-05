@@ -8,5 +8,11 @@ author_profile: true
 {% include base_path %}
 
 {% for post in site.teaching reversed %}
-  {% include archive-single.html %}
+  <div class="list__item">
+    <article class="archive__item">
+      <h2 class="archive__item-title">{{ post.title }}</h2>
+      <p>{{ post.type }}</p>
+      <p>{{ post.content }}</p>
+    </article>
+  </div>
 {% endfor %}
