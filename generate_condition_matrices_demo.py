@@ -232,6 +232,21 @@ def check_valid(benefit, cost, breach):
         if abs(ep_max[i] - wc_max[i]) != 2:
             return False
 
+    # Check condition 10: WC payoffs form a peak at the maximizer
+    # Values should increase up to the maximizer, then decrease after it
+    for i in range(3):
+        max_col = wc_max[i]
+
+        # Check increasing before peak (from column 1 to max_col)
+        for j in range(1, max_col):
+            if worst_case_payoff[i, j] >= worst_case_payoff[i, j + 1]:
+                return False
+
+        # Check decreasing after peak (from max_col to end)
+        for j in range(max_col, 5):
+            if worst_case_payoff[i, j] <= worst_case_payoff[i, j + 1]:
+                return False
+
     return True
 
 def main():
@@ -243,7 +258,8 @@ def main():
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
     print("3. Breach matrix: No Usage = 0.75, High-High = 0.99, values 0.75-0.99, monotonic")
     print("4. WC maximizers must be: one Medium, one High, one Very High (different rows)")
-    print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
+    print("5. EP maximizers must be 2 actions apart from WC maximizers")
+    print("6. WC payoffs must increase up to maximizer, then decrease after\n")
 
     # Create and analyze manual example
     print("\n" + "="*80)
