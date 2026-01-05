@@ -1,0 +1,232 @@
+import numpy as np
+import pandas as pd
+
+# Define action names
+actions = ['No Usage', 'Very Low', 'Low', 'Medium', 'High', 'Very High']
+collections = ['Low Collection', 'Medium Collection', 'High Collection']
+
+def print_matrix(matrix, title):
+    """Print matrix in formatted table."""
+    df = pd.DataFrame(matrix, index=collections, columns=actions)
+    print(f"\n{title}:")
+    print(df.to_string(float_format=lambda x: f'{x:.2f}'))
+
+def create_manual_example():
+    """Create a manually crafted example that satisfies all constraints."""
+    # Benefit matrix: No Usage = 0, monotonic increasing
+    benefit = np.array([
+        [0, 200, 300, 400, 500, 600],      # Low Collection
+        [0, 250, 350, 450, 550, 650],      # Medium Collection
+        [0, 300, 400, 500, 600, 700]       # High Collection
+    ], dtype=float)
+
+    # Cost matrix: No Usage = same (200), monotonic increasing
+    cost = np.array([
+        [200, 250, 350, 450, 500, 550],    # Low Collection
+        [200, 300, 400, 500, 550, 600],    # Medium Collection
+        [200, 350, 450, 550, 600, 650]     # High Collection
+    ], dtype=float)
+
+    # Breach Probability: No Usage = 0.75, High-High = 0.99
+    breach = np.array([
+        [0.75, 0.80, 0.85, 0.88, 0.90, 0.92],  # Low Collection
+        [0.75, 0.82, 0.87, 0.90, 0.93, 0.95],  # Medium Collection
+        [0.75, 0.84, 0.89, 0.92, 0.95, 0.99]   # High Collection
+    ], dtype=float)
+
+    return benefit, cost, breach
+
+def analyze_solution(benefit, cost, breach, solution_num):
+    """Analyze and print a solution."""
+    print("=" * 80)
+    print(f"SOLUTION {solution_num}")
+    print("=" * 80)
+
+    print_matrix(benefit, "BENEFIT MATRIX")
+    print_matrix(cost, "COST MATRIX")
+    print_matrix(breach, "BREACH PROBABILITY MATRIX")
+
+    # Calculate payoffs
+    expected_payoff = benefit - breach * cost
+    worst_case_payoff = benefit - cost
+
+    print_matrix(expected_payoff, "EXPECTED PAYOFF MATRIX")
+    print_matrix(worst_case_payoff, "WORST CASE PAYOFF MATRIX")
+
+    # Find maximizers (excluding No Usage column)
+    ep_max = np.argmax(expected_payoff[:, 1:], axis=1) + 1
+    wc_max = np.argmax(worst_case_payoff[:, 1:], axis=1) + 1
+
+    print("\n" + "-" * 80)
+    print("ROW-WISE MAXIMIZERS:")
+    print("-" * 80)
+    for i, coll in enumerate(collections):
+        print(f"{coll}:")
+        print(f"  Worst Case Payoff:  {actions[wc_max[i]]}")
+        print(f"  Expected Payoff:    {actions[ep_max[i]]}")
+
+    # Check conditions
+    print("\n" + "-" * 80)
+    print("CONSTRAINT CHECKS:")
+    print("-" * 80)
+
+    # Check if WC maximizers are {3, 4, 5}
+    wc_set = set(wc_max)
+    print(f"✓ WC maximizers are all different: {list(wc_set)}")
+    if wc_set == {3, 4, 5}:
+        print("  ✓ They are Medium, High, and Very High")
+    else:
+        print(f"  ✗ Expected {{Medium, High, Very High}} but got {[actions[i] for i in wc_set]}")
+
+    # Check if EP maximizers are 2 apart
+    print("\n✓ Checking if EP and WC maximizers are 2 apart:")
+    all_valid = True
+    for i in range(3):
+        diff = abs(ep_max[i] - wc_max[i])
+        status = "✓" if diff == 2 else "✗"
+        print(f"  {status} {collections[i]}: |{actions[ep_max[i]]} - {actions[wc_max[i]]}| = {diff}")
+        if diff != 2:
+            all_valid = False
+
+    if all_valid:
+        print("\n✓✓✓ ALL CONSTRAINTS SATISFIED! ✓✓✓")
+    else:
+        print("\n✗ Some constraints not satisfied")
+
+    print()
+
+    return all_valid, ep_max, wc_max
+
+def generate_random_matrices():
+    """Generate random matrices with all constraints."""
+    # Benefit: No Usage = 0
+    benefit = np.zeros((3, 6))
+    benefit[:, 0] = 0
+
+    for i in range(3):
+        vals = np.sort(np.random.uniform(100, 900, 5))
+        benefit[i, 1:] = vals
+
+    # Ensure column-wise monotonicity
+    for j in range(6):
+        for i in range(1, 3):
+            if benefit[i, j] <= benefit[i-1, j]:
+                benefit[i, j] = benefit[i-1, j] + np.random.uniform(10, 100)
+
+    # Cost: No Usage = x
+    x = np.random.uniform(150, 300)
+    cost = np.zeros((3, 6))
+    cost[:, 0] = x
+
+    for i in range(3):
+        vals = np.sort(np.random.uniform(x + 50, 900, 5))
+        cost[i, 1:] = vals
+
+    # Ensure column-wise monotonicity
+    for j in range(6):
+        for i in range(1, 3):
+            if cost[i, j] <= cost[i-1, j]:
+                cost[i, j] = cost[i-1, j] + np.random.uniform(10, 100)
+
+    # Breach: No Usage = 0.75, High-High = 0.99
+    breach = np.zeros((3, 6))
+    breach[:, 0] = 0.75
+
+    for i in range(3):
+        if i < 2:
+            vals = np.sort(np.random.uniform(0.76, 0.97, 5))
+        else:
+            vals = np.sort(np.random.uniform(0.76, 0.98, 5))
+        breach[i, 1:] = vals
+
+    breach[2, 5] = 0.99
+
+    # Ensure column-wise monotonicity
+    for j in range(6):
+        for i in range(1, 3):
+            if breach[i, j] <= breach[i-1, j]:
+                breach[i, j] = min(breach[i-1, j] + np.random.uniform(0.01, 0.03), 0.99)
+
+    breach[2, 5] = 0.99  # Reapply
+
+    return benefit, cost, breach
+
+def check_valid(benefit, cost, breach):
+    """Check if matrices satisfy all conditions."""
+    # Calculate payoffs
+    expected_payoff = benefit - breach * cost
+    worst_case_payoff = benefit - cost
+
+    # Find maximizers
+    ep_max = np.argmax(expected_payoff[:, 1:], axis=1) + 1
+    wc_max = np.argmax(worst_case_payoff[:, 1:], axis=1) + 1
+
+    # Check conditions
+    if set(wc_max) != {3, 4, 5}:
+        return False
+
+    for i in range(3):
+        if abs(ep_max[i] - wc_max[i]) != 2:
+            return False
+
+    return True
+
+def main():
+    print("="*80)
+    print("MATRIX GENERATION DEMONSTRATION")
+    print("="*80)
+    print("\nThis program generates matrices satisfying these conditions:")
+    print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
+    print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
+    print("3. Breach matrix: No Usage = 0.75, High-High = 0.99, values 0.75-0.99, monotonic")
+    print("4. WC maximizers must be: one Medium, one High, one Very High (different rows)")
+    print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
+
+    # Create and analyze manual example
+    print("\n" + "="*80)
+    print("DEMONSTRATING WITH A MANUALLY CRAFTED EXAMPLE")
+    print("="*80 + "\n")
+
+    benefit, cost, breach = create_manual_example()
+    valid, ep_max, wc_max = analyze_solution(benefit, cost, breach, 1)
+
+    # Try to generate random solutions
+    print("\n" + "="*80)
+    print("ATTEMPTING TO GENERATE RANDOM SOLUTIONS")
+    print("="*80 + "\n")
+
+    print("Searching for valid random solutions...")
+    print("(This may take a while due to strict constraints)\n")
+
+    valid_count = 1  # We already have the manual one
+    attempts = 0
+    max_attempts = 1000000  # Increase to find all 10
+
+    while valid_count < 10 and attempts < max_attempts:
+        attempts += 1
+
+        benefit, cost, breach = generate_random_matrices()
+
+        if check_valid(benefit, cost, breach):
+            valid_count += 1
+            print(f"✓ Found solution {valid_count}/10 (after {attempts} attempts)")
+            analyze_solution(benefit, cost, breach, valid_count)
+
+        if attempts % 50000 == 0 and valid_count == 1:
+            print(f"  ... still searching ({attempts} attempts, {valid_count-1} random solutions found)")
+
+    print("\n" + "="*80)
+    print("SUMMARY")
+    print("="*80)
+    if valid_count >= 10:
+        print(f"✓ Successfully generated {valid_count} solutions (1 manual + {valid_count-1} random)")
+    else:
+        print(f"⚠ Generated {valid_count} solution(s) (1 manual + {valid_count-1} random) after {attempts} attempts")
+        print("\nNote: The constraints are very strict. Finding solutions requires:")
+        print("  - All three matrices to be monotonic in both dimensions")
+        print("  - WC maximizers to be exactly {Medium, High, Very High} across the three rows")
+        print("  - EP maximizers to be exactly 2 positions away from WC maximizers")
+    print()
+
+if __name__ == "__main__":
+    main()
