@@ -223,8 +223,15 @@ def check_valid(benefit, cost, breach):
     ep_max = np.argmax(expected_payoff[:, 1:], axis=1) + 1
     wc_max = np.argmax(worst_case_payoff[:, 1:], axis=1) + 1
 
-    # Check condition 8: WC maximizers are {3, 4, 5}
-    if set(wc_max) != {3, 4, 5}:
+    # Check condition 8: WC maximizers must be specific for each row
+    # Low Collection -> Very High (5)
+    # Medium Collection -> High (4)
+    # High Collection -> Medium (3)
+    if wc_max[0] != 5:  # Low Collection must maximize at Very High
+        return False
+    if wc_max[1] != 4:  # Medium Collection must maximize at High
+        return False
+    if wc_max[2] != 3:  # High Collection must maximize at Medium
         return False
 
     # Check condition 9: EP maximizers are 2 apart from WC maximizers
@@ -242,7 +249,7 @@ def main():
     print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
     print("3. Breach matrix: No Usage = 0.2, High-High = 0.99, values 0.2-0.99, monotonic")
-    print("4. WC maximizers must be: one Medium, one High, one Very High (different rows)")
+    print("4. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
     print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
 
     # Create and analyze manual example
