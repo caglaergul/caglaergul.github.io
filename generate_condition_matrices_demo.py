@@ -141,6 +141,18 @@ def generate_random_matrices():
             if benefit[i, j] <= benefit[i-1, j]:
                 benefit[i, j] = benefit[i-1, j] + np.random.uniform(10, 100)
 
+    # Re-ensure row-wise monotonicity for benefit after all adjustments
+    for i in range(3):
+        for j in range(2, 6):
+            if benefit[i, j] <= benefit[i, j-1]:
+                benefit[i, j] = benefit[i, j-1] + np.random.uniform(10, 100)
+
+    # Re-ensure row-wise monotonicity for cost
+    for i in range(3):
+        for j in range(2, 6):
+            if cost[i, j] <= cost[i, j-1]:
+                cost[i, j] = cost[i, j-1] + np.random.uniform(10, 100)
+
     # Breach: No Usage = 0.75, High-High = 0.99
     breach = np.zeros((3, 6))
     breach[:, 0] = 0.75
@@ -182,11 +194,25 @@ def check_valid(benefit, cost, breach):
     if not np.isclose(breach[2, 5], 0.99):
         return False
 
+    # Check constraint 5: Row-wise monotonicity for all matrices
+    for matrix in [benefit, cost, breach]:
+        for i in range(3):
+            for j in range(1, 6):
+                if matrix[i, j] < matrix[i, j-1]:
+                    return False
+
+    # Check constraint 6: Column-wise monotonicity for all matrices
+    for matrix in [benefit, cost, breach]:
+        for j in range(6):
+            for i in range(1, 3):
+                if matrix[i, j] < matrix[i-1, j]:
+                    return False
+
     # Calculate payoffs
     expected_payoff = benefit - breach * cost
     worst_case_payoff = benefit - cost
 
-    # Check constraint 5: Worst case payoffs must be positive for columns 1-5
+    # Check constraint 7: Worst case payoffs must be positive for columns 1-5
     # (No Usage column can be negative)
     for i in range(3):
         for j in range(1, 6):
@@ -197,11 +223,11 @@ def check_valid(benefit, cost, breach):
     ep_max = np.argmax(expected_payoff[:, 1:], axis=1) + 1
     wc_max = np.argmax(worst_case_payoff[:, 1:], axis=1) + 1
 
-    # Check condition 6: WC maximizers are {3, 4, 5}
+    # Check condition 8: WC maximizers are {3, 4, 5}
     if set(wc_max) != {3, 4, 5}:
         return False
 
-    # Check condition 7: EP maximizers are 2 apart from WC maximizers
+    # Check condition 9: EP maximizers are 2 apart from WC maximizers
     for i in range(3):
         if abs(ep_max[i] - wc_max[i]) != 2:
             return False
