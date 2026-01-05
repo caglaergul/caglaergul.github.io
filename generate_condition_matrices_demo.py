@@ -104,29 +104,42 @@ def generate_random_matrices():
     benefit[:, 0] = 0
 
     for i in range(3):
-        vals = np.sort(np.random.uniform(100, 900, 5))
+        vals = np.sort(np.random.uniform(200, 900, 5))
         benefit[i, 1:] = vals
 
-    # Ensure column-wise monotonicity
-    for j in range(6):
+    # Ensure column-wise monotonicity (skip column 0 - No Usage)
+    for j in range(1, 6):  # Start from column 1, not 0
         for i in range(1, 3):
             if benefit[i, j] <= benefit[i-1, j]:
                 benefit[i, j] = benefit[i-1, j] + np.random.uniform(10, 100)
 
-    # Cost: No Usage = x
-    x = np.random.uniform(150, 300)
+    # Cost: No Usage = x (same for all rows)
+    x = np.random.uniform(100, 250)  # Lower range to ensure positive worst case
     cost = np.zeros((3, 6))
     cost[:, 0] = x
 
     for i in range(3):
-        vals = np.sort(np.random.uniform(x + 50, 900, 5))
+        # Generate costs that are lower than benefits to ensure positive worst case payoff
+        vals = np.sort(np.random.uniform(x + 20, 700, 5))
         cost[i, 1:] = vals
 
-    # Ensure column-wise monotonicity
-    for j in range(6):
+    # Ensure column-wise monotonicity (skip column 0 - No Usage)
+    for j in range(1, 6):  # Start from column 1, not 0
         for i in range(1, 3):
             if cost[i, j] <= cost[i-1, j]:
                 cost[i, j] = cost[i-1, j] + np.random.uniform(10, 100)
+
+    # Ensure worst case payoffs are positive (benefit > cost for columns 1-5)
+    for i in range(3):
+        for j in range(1, 6):
+            if benefit[i, j] <= cost[i, j]:
+                benefit[i, j] = cost[i, j] + np.random.uniform(50, 200)
+
+    # Re-ensure column-wise monotonicity for benefit after adjustment
+    for j in range(1, 6):
+        for i in range(1, 3):
+            if benefit[i, j] <= benefit[i-1, j]:
+                benefit[i, j] = benefit[i-1, j] + np.random.uniform(10, 100)
 
     # Breach: No Usage = 0.75, High-High = 0.99
     breach = np.zeros((3, 6))
@@ -141,8 +154,8 @@ def generate_random_matrices():
 
     breach[2, 5] = 0.99
 
-    # Ensure column-wise monotonicity
-    for j in range(6):
+    # Ensure column-wise monotonicity (skip column 0 - No Usage)
+    for j in range(1, 6):  # Start from column 1, not 0
         for i in range(1, 3):
             if breach[i, j] <= breach[i-1, j]:
                 breach[i, j] = min(breach[i-1, j] + np.random.uniform(0.01, 0.03), 0.99)
@@ -153,18 +166,42 @@ def generate_random_matrices():
 
 def check_valid(benefit, cost, breach):
     """Check if matrices satisfy all conditions."""
+    # Check constraint 1: Benefit No Usage column must be all 0
+    if not np.allclose(benefit[:, 0], 0):
+        return False
+
+    # Check constraint 2: Cost No Usage column must be equal
+    if not np.allclose(cost[:, 0], cost[0, 0]):
+        return False
+
+    # Check constraint 3: Breach No Usage column must be all 0.75
+    if not np.allclose(breach[:, 0], 0.75):
+        return False
+
+    # Check constraint 4: Breach High Collection - Very High must be 0.99
+    if not np.isclose(breach[2, 5], 0.99):
+        return False
+
     # Calculate payoffs
     expected_payoff = benefit - breach * cost
     worst_case_payoff = benefit - cost
+
+    # Check constraint 5: Worst case payoffs must be positive for columns 1-5
+    # (No Usage column can be negative)
+    for i in range(3):
+        for j in range(1, 6):
+            if worst_case_payoff[i, j] <= 0:
+                return False
 
     # Find maximizers
     ep_max = np.argmax(expected_payoff[:, 1:], axis=1) + 1
     wc_max = np.argmax(worst_case_payoff[:, 1:], axis=1) + 1
 
-    # Check conditions
+    # Check condition 6: WC maximizers are {3, 4, 5}
     if set(wc_max) != {3, 4, 5}:
         return False
 
+    # Check condition 7: EP maximizers are 2 apart from WC maximizers
     for i in range(3):
         if abs(ep_max[i] - wc_max[i]) != 2:
             return False
