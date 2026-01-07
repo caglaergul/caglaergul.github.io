@@ -28,11 +28,11 @@ def create_manual_example():
     ], dtype=float)
 
     # Breach Probability: No Usage = 0.1, High-High = 0.99
-    # Large jumps between actions
+    # Equal jumps of ~0.178 between actions
     breach = np.array([
-        [0.1, 0.30, 0.50, 0.70, 0.88, 0.92],  # Low Collection
-        [0.1, 0.32, 0.52, 0.72, 0.90, 0.95],  # Medium Collection
-        [0.1, 0.34, 0.54, 0.74, 0.92, 0.99]   # High Collection
+        [0.1, 0.28, 0.46, 0.64, 0.82, 0.96],  # Low Collection
+        [0.1, 0.28, 0.46, 0.64, 0.82, 0.97],  # Medium Collection
+        [0.1, 0.28, 0.46, 0.64, 0.82, 0.99]   # High Collection
     ], dtype=float)
 
     return benefit, cost, breach
@@ -155,19 +155,19 @@ def generate_random_matrices():
                 cost[i, j] = cost[i, j-1] + np.random.uniform(10, 100)
 
     # Breach: No Usage = 0.1, High-High = 0.99
-    # Create large jumps between actions
+    # Create equal jumps of ~0.178 between actions
     breach = np.zeros((3, 6))
     breach[:, 0] = 0.1
 
     for i in range(3):
-        # Generate probabilities with larger jumps between actions
-        # Very Low: 0.25-0.35, Low: 0.45-0.55, Medium: 0.65-0.75, High: 0.85-0.95, Very High: ~0.99
-        breach[i, 1] = np.random.uniform(0.25, 0.35)  # Very Low
-        breach[i, 2] = np.random.uniform(0.45, 0.55)  # Low
-        breach[i, 3] = np.random.uniform(0.65, 0.75)  # Medium
-        breach[i, 4] = np.random.uniform(0.85, 0.95)  # High
+        # Generate probabilities with equal jumps (~0.178 between each action)
+        # Target values: 0.1, 0.278, 0.456, 0.634, 0.812, 0.99
+        breach[i, 1] = np.random.uniform(0.26, 0.30)  # Very Low (~0.278)
+        breach[i, 2] = np.random.uniform(0.44, 0.48)  # Low (~0.456)
+        breach[i, 3] = np.random.uniform(0.62, 0.66)  # Medium (~0.634)
+        breach[i, 4] = np.random.uniform(0.80, 0.84)  # High (~0.812)
         if i < 2:
-            breach[i, 5] = np.random.uniform(0.92, 0.98)  # Very High
+            breach[i, 5] = np.random.uniform(0.96, 0.98)  # Very High (~0.99)
         else:
             breach[i, 5] = 0.99  # High Collection - Very High must be 0.99
 
@@ -255,8 +255,8 @@ def main():
     print("\nThis program generates matrices satisfying these conditions:")
     print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
-    print("3. Breach matrix: No Usage = 0.1, High-High = 0.99, large jumps between actions")
-    print("   (e.g., 0.1 -> 0.3 -> 0.5 -> 0.7 -> 0.9 -> 0.99)")
+    print("3. Breach matrix: No Usage = 0.1, High-High = 0.99, equal jumps between actions")
+    print("   (equal jumps of ~0.178: 0.1 -> 0.278 -> 0.456 -> 0.634 -> 0.812 -> 0.99)")
     print("4. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
     print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
 
