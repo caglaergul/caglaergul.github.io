@@ -27,11 +27,12 @@ def create_manual_example():
         [200, 350, 450, 550, 600, 650]     # High Collection
     ], dtype=float)
 
-    # Breach Probability: No Usage = 0.2, High-High = 0.99
+    # Breach Probability: No Usage = 0.1, High-High = 0.99
+    # Large jumps between actions
     breach = np.array([
-        [0.2, 0.80, 0.85, 0.88, 0.90, 0.92],  # Low Collection
-        [0.2, 0.82, 0.87, 0.90, 0.93, 0.95],  # Medium Collection
-        [0.2, 0.84, 0.89, 0.92, 0.95, 0.99]   # High Collection
+        [0.1, 0.30, 0.50, 0.70, 0.88, 0.92],  # Low Collection
+        [0.1, 0.32, 0.52, 0.72, 0.90, 0.95],  # Medium Collection
+        [0.1, 0.34, 0.54, 0.74, 0.92, 0.99]   # High Collection
     ], dtype=float)
 
     return benefit, cost, breach
@@ -153,16 +154,22 @@ def generate_random_matrices():
             if cost[i, j] <= cost[i, j-1]:
                 cost[i, j] = cost[i, j-1] + np.random.uniform(10, 100)
 
-    # Breach: No Usage = 0.2, High-High = 0.99
+    # Breach: No Usage = 0.1, High-High = 0.99
+    # Create large jumps between actions
     breach = np.zeros((3, 6))
-    breach[:, 0] = 0.2
+    breach[:, 0] = 0.1
 
     for i in range(3):
+        # Generate probabilities with larger jumps between actions
+        # Very Low: 0.25-0.35, Low: 0.45-0.55, Medium: 0.65-0.75, High: 0.85-0.95, Very High: ~0.99
+        breach[i, 1] = np.random.uniform(0.25, 0.35)  # Very Low
+        breach[i, 2] = np.random.uniform(0.45, 0.55)  # Low
+        breach[i, 3] = np.random.uniform(0.65, 0.75)  # Medium
+        breach[i, 4] = np.random.uniform(0.85, 0.95)  # High
         if i < 2:
-            vals = np.sort(np.random.uniform(0.21, 0.97, 5))
+            breach[i, 5] = np.random.uniform(0.92, 0.98)  # Very High
         else:
-            vals = np.sort(np.random.uniform(0.21, 0.98, 5))
-        breach[i, 1:] = vals
+            breach[i, 5] = 0.99  # High Collection - Very High must be 0.99
 
     breach[2, 5] = 0.99
 
@@ -186,8 +193,8 @@ def check_valid(benefit, cost, breach):
     if not np.allclose(cost[:, 0], cost[0, 0]):
         return False
 
-    # Check constraint 3: Breach No Usage column must be all 0.2
-    if not np.allclose(breach[:, 0], 0.2):
+    # Check constraint 3: Breach No Usage column must be all 0.1
+    if not np.allclose(breach[:, 0], 0.1):
         return False
 
     # Check constraint 4: Breach High Collection - Very High must be 0.99
@@ -248,7 +255,8 @@ def main():
     print("\nThis program generates matrices satisfying these conditions:")
     print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
-    print("3. Breach matrix: No Usage = 0.2, High-High = 0.99, values 0.2-0.99, monotonic")
+    print("3. Breach matrix: No Usage = 0.1, High-High = 0.99, large jumps between actions")
+    print("   (e.g., 0.1 -> 0.3 -> 0.5 -> 0.7 -> 0.9 -> 0.99)")
     print("4. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
     print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
 
