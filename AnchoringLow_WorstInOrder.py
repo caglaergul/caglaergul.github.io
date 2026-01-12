@@ -158,19 +158,30 @@ def generate_random_matrices():
     breach[:, 0] = 0.2
 
     for i in range(3):
-        if i < 2:
-            vals = np.sort(np.random.uniform(0.21, 0.97, 5))
-        else:
-            vals = np.sort(np.random.uniform(0.21, 0.98, 5))
-        breach[i, 1:] = vals
+        # Generate probabilities ensuring meaningful jumps (at least 0.04 between actions)
+        current = 0.2
+        for j in range(1, 6):
+            if j < 5:
+                # Ensure at least 0.04 jump, with some randomness
+                min_jump = 0.04
+                max_jump = 0.08
+                current = current + np.random.uniform(min_jump, max_jump)
+                breach[i, j] = min(current, 0.97)
+            else:
+                # Last column handling
+                if i < 2:
+                    breach[i, j] = np.random.uniform(0.96, 0.98)
+                else:
+                    breach[i, j] = 0.99
 
     breach[2, 5] = 0.99
 
-    # Ensure column-wise monotonicity (skip column 0 - No Usage)
-    for j in range(1, 6):  # Start from column 1, not 0
+    # Ensure column-wise meaningful jumps (at least 0.04)
+    for j in range(1, 6):
         for i in range(1, 3):
-            if breach[i, j] <= breach[i-1, j]:
-                breach[i, j] = min(breach[i-1, j] + np.random.uniform(0.01, 0.03), 0.99)
+            min_required = breach[i-1, j] + 0.04
+            if breach[i, j] < min_required:
+                breach[i, j] = min(min_required, 0.99 if j == 5 else 0.98)
 
     breach[2, 5] = 0.99  # Reapply
 
@@ -208,11 +219,24 @@ def check_valid(benefit, cost, breach):
                 if matrix[i, j] < matrix[i-1, j]:
                     return False
 
+    # Check constraint 7: Meaningful jumps in breach probabilities (at least 0.04)
+    # Row-wise jumps (between actions)
+    for i in range(3):
+        for j in range(1, 6):
+            if breach[i, j] - breach[i, j-1] < 0.04:
+                return False
+
+    # Column-wise jumps (between collections)
+    for j in range(1, 6):  # Skip No Usage column
+        for i in range(1, 3):
+            if breach[i, j] - breach[i-1, j] < 0.04:
+                return False
+
     # Calculate payoffs
     expected_payoff = benefit - breach * cost
     worst_case_payoff = benefit - cost
 
-    # Check constraint 7: Worst case payoffs must be positive for columns 1-5
+    # Check constraint 8: Worst case payoffs must be positive for columns 1-5
     # (No Usage column can be negative)
     for i in range(3):
         for j in range(1, 6):
@@ -249,8 +273,9 @@ def main():
     print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
     print("3. Breach matrix: No Usage = 0.2, High-High = 0.99, values 0.2-0.99, monotonic")
-    print("4. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
-    print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
+    print("4. Breach probabilities: meaningful jumps (≥0.04) both row-wise and column-wise")
+    print("5. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
+    print("6. EP maximizers must be 2 actions apart from WC maximizers\n")
 
     # Create and analyze manual example
     print("\n" + "="*80)
