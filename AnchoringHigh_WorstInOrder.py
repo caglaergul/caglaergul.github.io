@@ -27,11 +27,11 @@ def create_manual_example():
         [200, 350, 450, 550, 600, 650]     # High Collection
     ], dtype=float)
 
-    # Breach Probability: No Usage = 0.75, High-High = 0.99
+    # Breach Probability: No Usage = 0.6, High-High = 0.99
     breach = np.array([
-        [0.75, 0.80, 0.85, 0.88, 0.90, 0.92],  # Low Collection
-        [0.75, 0.82, 0.87, 0.90, 0.93, 0.95],  # Medium Collection
-        [0.75, 0.84, 0.89, 0.92, 0.95, 0.99]   # High Collection
+        [0.6, 0.80, 0.85, 0.88, 0.90, 0.92],  # Low Collection
+        [0.6, 0.82, 0.87, 0.90, 0.93, 0.95],  # Medium Collection
+        [0.6, 0.84, 0.89, 0.92, 0.95, 0.99]   # High Collection
     ], dtype=float)
 
     return benefit, cost, breach
@@ -153,15 +153,15 @@ def generate_random_matrices():
             if cost[i, j] <= cost[i, j-1]:
                 cost[i, j] = cost[i, j-1] + np.random.uniform(10, 100)
 
-    # Breach: No Usage = 0.75, High-High = 0.99
+    # Breach: No Usage = 0.6, High-High = 0.99
     breach = np.zeros((3, 6))
-    breach[:, 0] = 0.75
+    breach[:, 0] = 0.6
 
     for i in range(3):
         if i < 2:
-            vals = np.sort(np.random.uniform(0.76, 0.97, 5))
+            vals = np.sort(np.random.uniform(0.61, 0.97, 5))
         else:
-            vals = np.sort(np.random.uniform(0.76, 0.98, 5))
+            vals = np.sort(np.random.uniform(0.61, 0.98, 5))
         breach[i, 1:] = vals
 
     breach[2, 5] = 0.99
@@ -186,8 +186,8 @@ def check_valid(benefit, cost, breach):
     if not np.allclose(cost[:, 0], cost[0, 0]):
         return False
 
-    # Check constraint 3: Breach No Usage column must be all 0.75
-    if not np.allclose(breach[:, 0], 0.75):
+    # Check constraint 3: Breach No Usage column must be all 0.6
+    if not np.allclose(breach[:, 0], 0.6):
         return False
 
     # Check constraint 4: Breach High Collection - Very High must be 0.99
@@ -248,7 +248,7 @@ def main():
     print("\nThis program generates matrices satisfying these conditions:")
     print("1. Benefit matrix: No Usage = 0, values 100-1000, monotonic")
     print("2. Cost matrix: No Usage = same value x, values 100-1000, monotonic")
-    print("3. Breach matrix: No Usage = 0.75, High-High = 0.99, values 0.75-0.99, monotonic")
+    print("3. Breach matrix: No Usage = 0.6, High-High = 0.99, values 0.6-0.99, monotonic")
     print("4. WC maximizers: Low Collection->Very High, Medium->High, High->Medium")
     print("5. EP maximizers must be 2 actions apart from WC maximizers\n")
 
